@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schwimmkurs Termine</title>
-    <!-- Macht die Seite auf iOS/Android app-ähnlicher -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0284c7">
     <style>
@@ -32,6 +31,7 @@
             margin-bottom: 10px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             line-height: 1.4;
+            white-space: pre-wrap; /* Behält Formatierungen/Zeilenumbrüche bei */
         }
         .btn {
             display: inline-block;
@@ -54,13 +54,15 @@
     <div id="content"></div>
 
     <script>
-        // Verhindert Caching durch den Handy-Browser mittels Zeitstempel
+        // Verhindert Caching über Zeitstempel
         fetch('daten.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 document.getElementById('update-zeit').innerText = 'Letzter Check: ' + data.letztes_update;
                 
                 const container = document.getElementById('content');
+                
+                // Wir fassen den Inhalt als übersichtliche Blöcke oder Text zusammen
                 data.inhalte.forEach(zeile => {
                     const div = document.createElement('div');
                     div.className = 'card';
@@ -72,7 +74,7 @@
                 link.href = data.quelle;
                 link.className = 'btn';
                 link.target = '_blank';
-                link.innerText = 'Originalseite öffnen ↗';
+                link.innerText = 'Original-PDF öffnen ↗';
                 container.appendChild(link);
             })
             .catch(err => {
