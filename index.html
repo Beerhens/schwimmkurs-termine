@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schwimmkurs Termine</title>
+    <!-- Macht die Seite auf iOS/Android app-ähnlicher -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0284c7">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f0f9ff;
+            color: #0f172a;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            background: #0284c7;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 { margin: 0 0 5px 0; font-size: 1.4rem; }
+        .status { font-size: 0.85rem; opacity: 0.9; }
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            line-height: 1.4;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #0369a1;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏊‍♂️ Schwimmkurs Termine</h1>
+        <div class="status" id="update-zeit">Lade Daten...</div>
+    </div>
+
+    <div id="content"></div>
+
+    <script>
+        // Verhindert Caching durch den Handy-Browser mittels Zeitstempel
+        fetch('daten.json?t=' + new Date().getTime())
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('update-zeit').innerText = 'Letzter Check: ' + data.letztes_update;
+                
+                const container = document.getElementById('content');
+                data.inhalte.forEach(zeile => {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.innerText = zeile;
+                    container.appendChild(div);
+                });
+
+                const link = document.createElement('a');
+                link.href = data.quelle;
+                link.className = 'btn';
+                link.target = '_blank';
+                link.innerText = 'Originalseite öffnen ↗';
+                container.appendChild(link);
+            })
+            .catch(err => {
+                document.getElementById('update-zeit').innerText = 'Fehler beim Laden der Daten.';
+            });
+    </script>
+</body>
+</html>
