@@ -1,0 +1,36 @@
+name: Schwimmtermine aktualisieren
+
+on:
+  schedule:
+    # Läuft automatisch alle 2 Stunden (zur vollen Stunde)
+    - cron: '0 */2 * * *'
+  # Ermöglicht es dir, das Skript auch manuell per Klick zu starten
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Pakete installieren
+        run: pip install requests beautifulsoup4
+
+      - name: Scraper ausführen
+        run: python scraper.py
+
+      - name: Änderungen speichern (falls vorhanden)
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add daten.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Termine aktualisiert" && git push)
