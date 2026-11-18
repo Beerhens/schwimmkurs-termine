@@ -1,35 +1,40 @@
+import io
 import json
 from datetime import datetime
-from bs4 import BeautifulSoup
+import pypdf
 import requests
 
-# HIER DIE URL DER SCHWIMMSCHULE EINTRAGEN
-URL = "https://beispiel-schwimmschule.de/termine"
+# Deine genaue PDF-URL vom Kinder Spiel und Sportverein
+URL = "https://www.kinder-spiel-sport.de/_files/ugd/31658f_2b15e23129c54e288026535582d71e44.pdf"
 
 
-def scrape_termine():
+def scrape_pdf_termine():
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(URL, headers=headers)
     response.raise_for_status()
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    # PDF aus dem Binärstrom im Arbeitsspeicher lesen
+    pdf_file = io.BytesIO(response.content)
+    reader = pypdf.PdfReader(pdf_file)
 
-    # WICHTIG: Hier muss der CSS-Selektor der Schwimmschule rein!
-    # Beispiel: Wenn die Termine in einer Tabelle oder einem bestimmten <div> stehen.
-    # Aktuell zieht das Skript zum Testen alle Absätze (<p>) mit dem Wort "Schwimm" oder "Termin".
-    gefundene_texte = []
-    for element in soup.find_all(["p", "li", "td", "h2", "h3"]):
-        text = element.get_text(strip=True)
-        if text and len(text) > 10:  # Filtert leere oder zu kurze Schnipsel
-            gefundene_texte.append(text)
+    alle_zeilen = []
 
-    # Zeitstempel der letzten Prüfung
+    # Jede Seite des PDFs durchgehen
+    for page_num, page in enumerate(reader.pages):
+        text = page.extract_text()
+        if text:
+            # Zeilenweise auftrennen und leere Zeilen filtern
+            for line in text.split("\n"):
+                clean_line = line.strip()
+                if clean_line:
+                    alle_zeilen.append(clean_line)
+
     jetzt = datetime.now().strftime("%d.%m.%Y um %H:%M Uhr")
 
     daten = {
         "letztes_update": jetzt,
         "quelle": URL,
-        "inhalte": gefundene_texte[:30],  # Begrenzt auf die ersten 30 Treffer
+        "inhalte": alle_zeilen,  # Enthält den gesamten Text des PDF-Terminplans
     }
 
     with open("daten.json", "w", encoding="utf-8") as f:
@@ -37,4 +42,4 @@ def scrape_termine():
 
 
 if __name__ == "__main__":
-    scrape_termine()
+    scrape_pdf_termine()
